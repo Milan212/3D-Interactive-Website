@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milan M. Joseph | Interactive 3D Portfolio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            cyan: '#00f0ff',
+                            purple: '#7000ff',
+                            amber: '#ffaa00',
+                            dark: '#0a0a10',
+                            card: 'rgba(18, 18, 28, 0.75)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* Custom scrollbar and backdrop filters */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a3d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+        .glass-panel {
+            background: rgba(16, 18, 27, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-panel-glow {
+            transition: all 0.3s ease;
+        }
+        .glass-panel-glow:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+        }
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #ffffff 0%, #00f0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-purple {
+            background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        canvas#webgl-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-cyber-dark text-slate-200 font-sans antialiased overflow-x-hidden selection:bg-cyber-cyan selection:text-black">
+
+    <!-- 3D Three.js Canvas -->
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- Overlay UI Wrapper -->
+    <div class="relative z-10">
+
+        <!-- Navigation Bar -->
+        <header class="fixed top-0 left-0 w-full z-50 px-6 py-4 transition-all duration-300" id="navbar">
+            <div class="max-w-7xl mx-auto flex justify-between items-center glass-panel rounded-2xl px-6 py-3">
+                <a href="#hero" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyber-cyan to-cyber-purple p-[2px] flex items-center justify-center">
+                        <div class="w-full h-full bg-cyber-dark rounded-[10px] flex items-center justify-center font-mono font-bold text-cyber-cyan group-hover:bg-transparent group-hover:text-white transition-all">
+                            MJ
+                        </div>
+                    </div>
+                    <span class="font-bold text-lg tracking-wider text-white">MILAN M. JOSEPH</span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-8 font-mono text-sm">
+                    <a href="#about" class="text-slate-300 hover:text-cyber-cyan transition-colors">// 01. ABOUT</a>
+                    <a href="#skills" class="text-slate-300 hover:text-cyber-cyan transition-colors">// 02. SKILLS</a>
+                    <a href="#experience" class="text-slate-300 hover:text-cyber-cyan transition-colors">// 03. EXPERIENCE</a>
+                    <a href="#software" class="text-slate-300 hover:text-cyber-cyan transition-colors">// 04. TOOLS</a>
+                    <a href="#contact" class="px-4 py-2 rounded-lg bg-cyber-cyan/10 border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                        GET IN TOUCH
+                    </a>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <button id="menu-btn" class="md:hidden text-slate-300 hover:text-white p-2">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Dropdown -->
+            <div id="mobile-menu" class="hidden md:hidden max-w-7xl mx-auto mt-2 glass-panel rounded-2xl p-6 flex-col gap-4 font-mono text-sm">
+                <a href="#about" class="mobile-link text-slate-300 hover:text-cyber-cyan">// 01. ABOUT</a>
+                <a href="#skills" class="mobile-link text-slate-300 hover:text-cyber-cyan">// 02. SKILLS</a>
+                <a href="#experience" class="mobile-link text-slate-300 hover:text-cyber-cyan">// 03. EXPERIENCE</a>
+                <a href="#software" class="mobile-link text-slate-300 hover:text-cyber-cyan">// 04. TOOLS</a>
+                <a href="#contact" class="mobile-link text-cyber-cyan font-bold">// GET IN TOUCH</a>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="hero" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-12 relative">
+            <div class="max-w-5xl mx-auto text-center space-y-8 pointer-events-none">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-cyber-cyan/30 text-cyber-cyan text-xs font-mono tracking-widest uppercase animate-pulse">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Interactive 3D Canvas • Click/Drag to Interact
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-none text-white">
+                    MILAN M. <span class="text-gradient-purple">JOSEPH</span>
+                </h1>
+
+                <p class="text-lg md:text-2xl font-mono text-cyber-cyan/90 max-w-3xl mx-auto font-light">
+                    Animation & Digital Media <span class="text-slate-500">|</span> Photography <span class="text-slate-500">|</span> Videography <span class="text-slate-500">|</span> VFX
+                </p>
+
+                <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+                    Crafting immersive visual experiences through 3D animation, cinematography, compositing, and creative post-production.
+                </p>
+
+                <div class="pt-6 flex flex-wrap justify-center gap-4 pointer-events-auto">
+                    <a href="#experience" class="px-8 py-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-purple font-semibold text-black hover:opacity-90 transition-all transform hover:-translate-y-1 shadow-[0_0_25px_rgba(0,240,255,0.4)] flex items-center gap-2">
+                        View Experience <i data-lucide="arrow-down-right" class="w-5 h-5"></i>
+                    </a>
+                    <a href="#contact" class="px-8 py-4 rounded-xl glass-panel text-white font-semibold hover:border-cyber-cyan/50 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                        Contact Me <i data-lucide="mail" class="w-5 h-5 text-cyber-cyan"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Scroll Down Indicator -->
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500 text-xs font-mono animate-bounce">
+                <span>SCROLL TO EXPLORE</span>
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-24 px-6 relative">
+            <div class="max-w-5xl mx-auto">
+                <div class="glass-panel glass-panel-glow rounded-3xl p-8 md:p-12 space-y-8">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 rounded-2xl bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/20">
+                            <i data-lucide="user" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <span class="text-cyber-cyan font-mono text-xs uppercase tracking-widest">// Profile Overview</span>
+                            <h2 class="text-3xl md:text-4xl font-bold text-white">Visual Storyteller & VFX Artist</h2>
+                        </div>
+                    </div>
+
+                    <p class="text-slate-300 text-base md:text-lg leading-relaxed font-light">
+                        Animation & Digital Media student with hands-on experience in <strong class="text-white font-semibold">videography, photography, cinematography, video editing, VFX, and visual content production</strong>. Experienced across the creative process from planning and shooting to editing, color grading, compositing, and final delivery. Possesses a strong understanding of visual composition, lighting, framing, and visual storytelling.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                        <div class="flex items-center gap-3 text-slate-300">
+                            <i data-lucide="graduation-cap" class="w-5 h-5 text-cyber-cyan"></i>
+                            <div>
+                                <span class="text-xs text-slate-400 block font-mono">Education</span>
+                                <span class="text-sm font-semibold text-white">St. Joseph's University</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-300">
+                            <i data-lucide="award" class="w-5 h-5 text-cyber-cyan"></i>
+                            <div>
+                                <span class="text-xs text-slate-400 block font-mono">Degree</span>
+                                <span class="text-sm font-semibold text-white">B.A. Animation & Digital Media (3rd Year)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Skills Section -->
+        <section id="skills" class="py-24 px-6 relative">
+            <div class="max-w-6xl mx-auto space-y-12">
+                <div class="text-center space-y-2">
+                    <span class="text-cyber-cyan font-mono text-xs uppercase tracking-widest">// Core Capabilities</span>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white">Technical & Creative Skills</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Skill Card 1 -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/20">
+                                <i data-lucide="camera" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">Photography & Videography</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-all">Camera Operation</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-all">Framing & Composition</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-all">Studio Lighting</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-all">Shot Planning</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-all">Visual Storytelling</span>
+                        </div>
+                    </div>
+
+                    <!-- Skill Card 2 -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-cyber-purple/20 text-purple-400 border border-cyber-purple/30">
+                                <i data-lucide="box" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">3D & Visual Effects</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-purple-400/40 hover:text-purple-400 transition-all">Blender 3D</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-purple-400/40 hover:text-purple-400 transition-all">3D Animation</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-purple-400/40 hover:text-purple-400 transition-all">Rotoscoping</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-purple-400/40 hover:text-purple-400 transition-all">Chroma Keying</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-purple-400/40 hover:text-purple-400 transition-all">3D Camera Tracking</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-purple-400/40 hover:text-purple-400 transition-all">3D Element Integration</span>
+                        </div>
+                    </div>
+
+                    <!-- Skill Card 3 -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-cyber-amber/10 text-amber-400 border border-cyber-amber/30">
+                                <i data-lucide="film" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">Video & Post-Production</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-amber-400/40 hover:text-amber-400 transition-all">Video Editing</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-amber-400/40 hover:text-amber-400 transition-all">Color Correction & Grading</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-amber-400/40 hover:text-amber-400 transition-all">Motion Graphics</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-amber-400/40 hover:text-amber-400 transition-all">Digital Compositing</span>
+                        </div>
+                    </div>
+
+                    <!-- Skill Card 4 -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                <i data-lucide="clapperboard" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">Creative & Production</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-emerald-400/40 hover:text-emerald-400 transition-all">Content Creation</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-emerald-400/40 hover:text-emerald-400 transition-all">Creative Concepts</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-emerald-400/40 hover:text-emerald-400 transition-all">Visual Direction</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-emerald-400/40 hover:text-emerald-400 transition-all">Production Planning</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-300 hover:border-emerald-400/40 hover:text-emerald-400 transition-all">Collaborative Work</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="py-24 px-6 relative">
+            <div class="max-w-5xl mx-auto space-y-12">
+                <div class="text-center space-y-2">
+                    <span class="text-cyber-cyan font-mono text-xs uppercase tracking-widest">// Portfolio History</span>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white">Creative Production Experience</h2>
+                </div>
+
+                <div class="glass-panel glass-panel-glow rounded-3xl p-8 md:p-12 relative overflow-hidden">
+                    <div class="absolute -right-20 -top-20 w-60 h-60 bg-cyber-purple/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="space-y-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Short-Film & Video Production Collaborator</h3>
+                                <p class="text-cyber-cyan font-mono text-sm mt-1">Independent & Student Filmmaker Projects</p>
+                            </div>
+                            <span class="px-4 py-1.5 rounded-full bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan text-xs font-mono self-start md:self-auto">
+                                Active Projects
+                            </span>
+                        </div>
+
+                        <ul class="space-y-4 text-slate-300 font-light">
+                            <li class="flex items-start gap-3">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-cyber-cyan shrink-0 mt-1"></i>
+                                <span>Collaborated with student filmmakers on short-form film and video productions across all key stages of production.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-cyber-cyan shrink-0 mt-1"></i>
+                                <span>Worked closely with camera setups to plan and execute shots tailored to specific visual and storytelling requirements.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-cyber-cyan shrink-0 mt-1"></i>
+                                <span>Produced and edited video content utilizing industry standard tools: <strong class="text-white font-semibold">Premiere Pro, After Effects, and DaVinci Resolve</strong>.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-cyber-cyan shrink-0 mt-1"></i>
+                                <span>Applied professional color correction and grading to elevate visual consistency and match cinematic footage mood.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-cyber-cyan shrink-0 mt-1"></i>
+                                <span>Executed advanced VFX and compositing techniques including <strong class="text-white font-semibold">keying, object tracking, rotoscoping, and 3D scene integration</strong>.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Software Section -->
+        <section id="software" class="py-24 px-6 relative">
+            <div class="max-w-6xl mx-auto space-y-12">
+                <div class="text-center space-y-2">
+                    <span class="text-cyber-cyan font-mono text-xs uppercase tracking-widest">// Toolkit</span>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white">Software Proficiency</h2>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Blender -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-6 text-center space-y-4 group">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="layers" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Blender</h3>
+                            <p class="text-xs text-slate-400 font-mono mt-1">3D Modeling & Animation</p>
+                        </div>
+                    </div>
+
+                    <!-- After Effects -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-6 text-center space-y-4 group">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="sparkles" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">After Effects</h3>
+                            <p class="text-xs text-slate-400 font-mono mt-1">VFX & Motion Graphics</p>
+                        </div>
+                    </div>
+
+                    <!-- Premiere Pro -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-6 text-center space-y-4 group">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="video" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Premiere Pro</h3>
+                            <p class="text-xs text-slate-400 font-mono mt-1">Video Editing & Assembly</p>
+                        </div>
+                    </div>
+
+                    <!-- DaVinci Resolve -->
+                    <div class="glass-panel glass-panel-glow rounded-3xl p-6 text-center space-y-4 group">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="palette" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">DaVinci Resolve</h3>
+                            <p class="text-xs text-slate-400 font-mono mt-1">Color Grading & Finishing</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-24 px-6 relative">
+            <div class="max-w-4xl mx-auto space-y-12">
+                <div class="glass-panel glass-panel-glow rounded-3xl p-8 md:p-12 text-center space-y-8 relative overflow-hidden">
+                    <div class="absolute -left-20 -bottom-20 w-60 h-60 bg-cyber-cyan/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="space-y-3">
+                        <span class="text-cyber-cyan font-mono text-xs uppercase tracking-widest">// Connect With Me</span>
+                        <h2 class="text-3xl md:text-5xl font-bold text-white">Let's Create Together</h2>
+                        <p class="text-slate-400 max-w-xl mx-auto text-sm md:text-base">
+                            Open for creative collaborations, video projects, 3D animation roles, and VFX assignments.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+                        <a href="mailto:mathewmilan00@gmail.com" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-bold flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                            mathewmilan00@gmail.com
+                        </a>
+
+                        <a href="tel:8123182604" class="w-full sm:w-auto px-8 py-4 rounded-2xl glass-panel text-white font-bold flex items-center justify-center gap-3 hover:border-cyber-cyan/50 transition-all">
+                            <i data-lucide="phone" class="w-5 h-5 text-cyber-cyan"></i>
+                            +91 8123182604
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer class="text-center font-mono text-xs text-slate-500 py-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <span>© <span id="current-year"></span> MILAN M. JOSEPH. ALL RIGHTS RESERVED.</span>
+                    <span class="text-slate-600">BUILT WITH THREE.JS & TAILWIND</span>
+                </footer>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Interactive Three.js JavaScript Engine -->
+    <script>
+        // Set dynamic current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle logic
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+            });
+        });
+
+        /* =========================================================
+           THREE.JS INTERACTIVE 3D BACKGROUND
+           ========================================================= */
+        const canvas = document.getElementById('webgl-bg');
+        
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a0a10, 0.035);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 15;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const pointLight1 = new THREE.PointLight(0x00f0ff, 2, 50);
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0x7000ff, 2.5, 50);
+        pointLight2.position.set(-10, -10, -5);
+        scene.add(pointLight2);
+
+        // 1. Particle Node Field
+        const particleCount = 700;
+        const geometryParticles = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+
+        const colorCyan = new THREE.Color(0x00f0ff);
+        const colorPurple = new THREE.Color(0x7000ff);
+
+        for(let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 50;
+            positions[i+1] = (Math.random() - 0.5) * 50;
+            positions[i+2] = (Math.random() - 0.5) * 50;
+
+            const mixedColor = colorCyan.clone().lerp(colorPurple, Math.random());
+            colors[i] = mixedColor.r;
+            colors[i+1] = mixedColor.g;
+            colors[i+2] = mixedColor.b;
+        }
+
+        geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            size: 0.12,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const particleSystem = new THREE.Points(geometryParticles, particleMaterial);
+        scene.add(particleSystem);
+
+        // 2. Interactive Floating Geometric Polyhedrons (Camera Rig / Lens motif)
+        const interactiveGroup = new THREE.Group();
+        scene.add(interactiveGroup);
+
+        const meshes = [];
+
+        // Center Wireframe Icosahedron (Representing 3D & VFX)
+        const icoGeo = new THREE.IcosahedronGeometry(2.5, 1);
+        const icoMat = new THREE.MeshStandardMaterial({
+            color: 0x00f0ff,
+            wireframe: true,
+            emissive: 0x005577,
+            roughness: 0.2
+        });
+        const mainIco = new THREE.Mesh(icoGeo, icoMat);
+        mainIco.position.set(0, 0, 0);
+        interactiveGroup.add(mainIco);
+        meshes.push(mainIco);
+
+        // Floating Torus Ring (Camera Aperture / Film Lens Motif)
+        const torusGeo = new THREE.TorusGeometry(4.5, 0.08, 16, 100);
+        const torusMat = new THREE.MeshStandardMaterial({
+            color: 0x7000ff,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const torusRing = new THREE.Mesh(torusGeo, torusMat);
+        torusRing.rotation.x = Math.PI / 3;
+        interactiveGroup.add(torusRing);
+        meshes.push(torusRing);
+
+        // Outer Floating Wireframe Octahedrons
+        for(let i = 0; i < 8; i++) {
+            const octGeo = new THREE.OctahedronGeometry(0.8 + Math.random() * 0.4, 0);
+            const octMat = new THREE.MeshStandardMaterial({
+                color: i % 2 === 0 ? 0x00f0ff : 0xffaa00,
+                wireframe: true,
+                roughness: 0.3
+            });
+            const octMesh = new THREE.Mesh(octGeo, octMat);
+
+            const angle = (i / 8) * Math.PI * 2;
+            const radius = 6 + Math.random() * 3;
+            octMesh.position.x = Math.cos(angle) * radius;
+            octMesh.position.y = (Math.random() - 0.5) * 4;
+            octMesh.position.z = Math.sin(angle) * radius;
+
+            // Store custom rotation speeds
+            octMesh.userData = {
+                rotSpeedX: (Math.random() - 0.5) * 0.02,
+                rotSpeedY: (Math.random() - 0.5) * 0.02
+            };
+
+            interactiveGroup.add(octMesh);
+            meshes.push(octMesh);
+        }
+
+        // 3. Mouse Interaction & Parallax Logic
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        const raycaster = new THREE.Raycaster();
+        const mouseVector = new THREE.Vector2();
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - windowHalfX) * 0.001;
+            mouseY = (e.clientY - windowHalfY) * 0.001;
+
+            mouseVector.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseVector.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Click burst / Ripple Effect in 3D Space
+        const bursts = [];
+        document.addEventListener('click', (e) => {
+            // Check raycast hover
+            raycaster.setFromCamera(mouseVector, camera);
+            const intersects = raycaster.intersectObjects(meshes);
+
+            if (intersects.length > 0) {
+                const target = intersects[0].object;
+                target.scale.multiplyScalar(1.3);
+                setTimeout(() => target.scale.set(1, 1, 1), 300);
+            }
+
+            // Create 3D burst of particles at click depth
+            const burstGeo = new THREE.BufferGeometry();
+            const count = 30;
+            const pPos = new Float32Array(count * 3);
+            const pVel = [];
+
+            // Convert click screen pos to 3D world pos
+            const vector = new THREE.Vector3(mouseVector.x, mouseVector.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+
+            for (let i = 0; i < count; i++) {
+                pPos[i * 3] = pos.x;
+                pPos[i * 3 + 1] = pos.y;
+                pPos[i * 3 + 2] = pos.z;
+
+                pVel.push({
+                    x: (Math.random() - 0.5) * 0.3,
+                    y: (Math.random() - 0.5) * 0.3,
+                    z: (Math.random() - 0.5) * 0.3
+                });
+            }
+
+            burstGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const burstMat = new THREE.PointsMaterial({
+                color: 0x00f0ff,
+                size: 0.15,
+                transparent: true,
+                opacity: 1
+            });
+
+            const burstPoints = new THREE.Points(burstGeo, burstMat);
+            scene.add(burstPoints);
+            bursts.push({ points: burstPoints, vel: pVel, life: 1.0 });
+        });
+
+        // Window Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 4. Animation Render Loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Smooth parallax tracking
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            camera.position.x = targetX * 10;
+            camera.position.y = -targetY * 10;
+            camera.lookAt(scene.position);
+
+            // Rotate particle system slowly
+            particleSystem.rotation.y = elapsedTime * 0.03;
+            particleSystem.rotation.x = elapsedTime * 0.01;
+
+            // Animate 3D group meshes
+            mainIco.rotation.x = elapsedTime * 0.2;
+            mainIco.rotation.y = elapsedTime * 0.3;
+
+            torusRing.rotation.z = elapsedTime * 0.15;
+            torusRing.rotation.y = elapsedTime * 0.1;
+
+            // Rotate smaller outer geometries
+            interactiveGroup.children.forEach((mesh) => {
+                if (mesh.userData.rotSpeedX) {
+                    mesh.rotation.x += mesh.userData.rotSpeedX;
+                    mesh.rotation.y += mesh.userData.rotSpeedY;
+                }
+            });
+
+            // Raycaster Hover Visual Response
+            raycaster.setFromCamera(mouseVector, camera);
+            const intersects = raycaster.intersectObjects(meshes);
+
+            canvas.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
+
+            // Animate & cleanup click particle bursts
+            for (let i = bursts.length - 1; i >= 0; i--) {
+                const b = bursts[i];
+                b.life -= 0.02;
+                b.points.material.opacity = b.life;
+
+                const positions = b.points.geometry.attributes.position.array;
+                for (let j = 0; j < positions.length / 3; j++) {
+                    positions[j * 3] += b.vel[j].x;
+                    positions[j * 3 + 1] += b.vel[j].y;
+                    positions[j * 3 + 2] += b.vel[j].z;
+                }
+                b.points.geometry.attributes.position.needsUpdate = true;
+
+                if (b.life <= 0) {
+                    scene.remove(b.points);
+                    bursts.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Start animation loop on window load
+        window.onload = function() {
+            animate();
+        };
+    </script>
+</body>
+</html>
